@@ -58,12 +58,12 @@ namespace ArcadeFlyer2D
         protected override void Draw(GameTime gameTime)
         {
             // First clear the screen
-            GraphicsDevice.Clear(Color.MediumVioletRed);
+            GraphicsDevice.Clear(Color.LightSteelBlue);
 
             spriteBatch.Begin();
             //Drawing will happen here
             Rectangle playerDestinationRect = new Rectangle(100,100,playerImage.Width,playerImage.Height);
-            spriteBatch.Draw(playerImage, playerDestinationRect, Color.White); 
+            spriteBatch.Draw(playerImage, playerDestinationRect, Color.LightGreen); 
             //Color.White adds a clear filter to show the image. Color.(other) tints it that color
 
             spriteBatch.End();
