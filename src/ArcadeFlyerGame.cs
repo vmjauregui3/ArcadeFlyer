@@ -13,7 +13,8 @@ namespace ArcadeFlyer2D
         private SpriteBatch spriteBatch;
 
         // Player Character Graphic
-        private Texture2D playerImage;
+        //private Texture2D playerImage;
+        private Player player; //test
         
         // Initalized the game
         public ArcadeFlyerGame()
@@ -31,6 +32,8 @@ namespace ArcadeFlyer2D
 
             // Make mouse visible
             IsMouseVisible = true;
+
+            player = new Player(this, new Vector2(10.0f, 10.0f)); //test
         }
 
         // Initialize
@@ -42,7 +45,7 @@ namespace ArcadeFlyer2D
         // Load the content for the game, called automatically on start
         protected override void LoadContent()
         {
-            playerImage = Content.Load<Texture2D>("MainChar");
+            //playerImage = Content.Load<Texture2D>("MainChar"); //test(//)
             // Create the sprite batch
             spriteBatch = new SpriteBatch(GraphicsDevice);
         }
@@ -52,6 +55,7 @@ namespace ArcadeFlyer2D
         {   
             // Update base game
             base.Update(gameTime);
+            player.Update(gameTime);
         }
 
         // Draw everything in the game
@@ -61,11 +65,13 @@ namespace ArcadeFlyer2D
             GraphicsDevice.Clear(Color.LightSteelBlue);
 
             spriteBatch.Begin();
+            /*
             //Drawing will happen here
             Rectangle playerDestinationRect = new Rectangle(100,100,playerImage.Width,playerImage.Height);
             spriteBatch.Draw(playerImage, playerDestinationRect, Color.LightGreen); 
             //Color.White adds a clear filter to show the image. Color.(other) tints it that color
-
+            */ //test (/*)
+            player.Draw(gameTime, spriteBatch);
             spriteBatch.End();
         }
     }
