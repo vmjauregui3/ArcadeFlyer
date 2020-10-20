@@ -12,10 +12,25 @@ namespace ArcadeFlyer2D
         // Sprite Drawer
         private SpriteBatch spriteBatch;
 
-        // Player Character Graphic
-        //private Texture2D playerImage;
-        private Player player; //test
+        private Player player; 
         
+        //propfull
+        //ctor
+        private int screenWidth = 1600;
+        public int ScreenWidth
+        {
+            get { return screenWidth; }
+            set { screenWidth = value; }
+        }
+
+        private int screenHeight = 900;
+        public int ScreenHeight
+        {
+            get { return screenHeight; }
+            set { screenHeight = value; }
+        }
+        
+
         // Initalized the game
         public ArcadeFlyerGame()
         {
@@ -23,8 +38,8 @@ namespace ArcadeFlyer2D
             graphics = new GraphicsDeviceManager(this);
 
             // Set the height and width
-            graphics.PreferredBackBufferWidth = 1600;
-            graphics.PreferredBackBufferHeight = 900;
+            graphics.PreferredBackBufferWidth = screenWidth;
+            graphics.PreferredBackBufferHeight = screenHeight;
             graphics.ApplyChanges();
 
             // Set up the directory containing the assets
@@ -33,7 +48,8 @@ namespace ArcadeFlyer2D
             // Make mouse visible
             IsMouseVisible = true;
 
-            player = new Player(this, new Vector2(10.0f, 10.0f)); //test
+            Vector2 position = new Vector2(100.0f, 100.0f);
+            player = new Player(this, position);
         }
 
         // Initialize
@@ -45,7 +61,7 @@ namespace ArcadeFlyer2D
         // Load the content for the game, called automatically on start
         protected override void LoadContent()
         {
-            //playerImage = Content.Load<Texture2D>("MainChar"); //test(//)
+                //playerImage = Content.Load<Texture2D>("MainChar"); //test(//)
             // Create the sprite batch
             spriteBatch = new SpriteBatch(GraphicsDevice);
         }
@@ -66,10 +82,10 @@ namespace ArcadeFlyer2D
 
             spriteBatch.Begin();
             /*
-            //Drawing will happen here
-            Rectangle playerDestinationRect = new Rectangle(100,100,playerImage.Width,playerImage.Height);
-            spriteBatch.Draw(playerImage, playerDestinationRect, Color.LightGreen); 
-            //Color.White adds a clear filter to show the image. Color.(other) tints it that color
+                //Drawing will happen here
+                Rectangle playerDestinationRect = new Rectangle(100,100,playerImage.Width,playerImage.Height);
+                spriteBatch.Draw(playerImage, playerDestinationRect, Color.LightGreen); 
+                //Color.White adds a clear filter to show the image. Color.(other) tints it that color
             */ //test (/*)
             player.Draw(gameTime, spriteBatch);
             spriteBatch.End();
