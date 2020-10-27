@@ -13,6 +13,8 @@ namespace ArcadeFlyer2D
         private SpriteBatch spriteBatch;
 
         private Player player; 
+
+        private Enemy enemy;
         
         //propfull
         //ctor
@@ -50,6 +52,8 @@ namespace ArcadeFlyer2D
 
             Vector2 position = new Vector2(100.0f, 100.0f);
             player = new Player(this, position);
+
+            enemy = new Enemy(this, new Vector2(screenWidth-200, 0));
         }
 
         // Initialize
@@ -72,6 +76,7 @@ namespace ArcadeFlyer2D
             // Update base game
             base.Update(gameTime);
             player.Update(gameTime);
+            enemy.Update(gameTime);
         }
 
         // Draw everything in the game
@@ -88,6 +93,7 @@ namespace ArcadeFlyer2D
                 //Color.White adds a clear filter to show the image. Color.(other) tints it that color
             */ //test (/*)
             player.Draw(gameTime, spriteBatch);
+            enemy.Draw(gameTime, spriteBatch);
             spriteBatch.End();
         }
     }
