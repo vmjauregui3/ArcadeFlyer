@@ -1,69 +1,52 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
 namespace ArcadeFlyer2D
 {
-    class Enemy
+    // A little evil thing
+    class Enemy : Sprite
     {
+        // A reference to the game that will contain this enemy
         private ArcadeFlyerGame root;
 
-        private Vector2 position;
-
-        private Texture2D spriteImage;
-
-        private float spriteWidth = 100.0f;
-
+        // The the velocity for this enemy
         private Vector2 velocity;
 
-        public float SpriteHeight
+        // Initialize an enemy
+        public Enemy(ArcadeFlyerGame root, Vector2 position) : base(position)
         {
-            get 
-            {
-                float scale = spriteWidth / spriteImage.Width;
-                return spriteImage.Height * scale;
-            }
-        }
-        
-        public Rectangle PositionRectangle
-        {
-            get 
-            { 
-                return new Rectangle((int)position.X, (int)position.Y, (int)spriteWidth, (int)SpriteHeight);
-            }
-        }
-
-        public Enemy(ArcadeFlyerGame root, Vector2 position)
-        {
+            // Initialize values
             this.root = root;
-            this.position = position;
-            this.spriteWidth = 128.0f;
-            this.velocity = new Vector2(-5.0f, 25.0f);
+            this.Position = position;
+            this.SpriteWidth = 128.0f;
+            this.velocity = new Vector2(-1.0f, 2.0f);
 
+            // Load the content for this enemy
             LoadContent();
         }
+
+        // Loads all the assets for this enemy
         public void LoadContent()
         {
-            this.spriteImage = root.Content.Load<Texture2D>("Enemy");
+            // Get the Enemy image
+            this.SpriteImage = root.Content.Load<Texture2D>("Enemy");
         }
 
-        public void Update(GameTime gametime)
+        // Called each frame
+        public void Update(GameTime gameTime)
         {
-            position += velocity;        
-            if(position.Y < 0 || position.Y > (root.ScreenHeight - SpriteHeight))
+            // Handle movement
+            position += velocity;
+
+            // Bounce on top and bottom
+            if (position.Y < 0 || position.Y > (root.ScreenHeight - SpriteHeight))
             {
                 velocity.Y *= -1;
             }
-
-            if(position.X < 0 || position.X > (root.ScreenWidth - spriteWidth))
+            if(position.X < 0 || position.X > (root.ScreenWidth - SpriteWidth))
             {
                 velocity.X *= -1;
             }
-        }
-
-        public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
-        {
-            spriteBatch.Draw(spriteImage, PositionRectangle, Color.White);
         }
     }
 }
