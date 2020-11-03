@@ -10,6 +10,12 @@ namespace ArcadeFlyer2D
         
         private float movementSpeed = 20.0f;
 
+        //Minium time between shots
+        private float projectileCoolDownTime = 0.5f;
+        //Current time since shot
+        private float projectileTimer = 0.0f;
+        private bool projectileTimerActive = false;
+
         public Player(ArcadeFlyerGame root, Vector2 position) : base(position)
         {
             this.root = root;
@@ -18,18 +24,10 @@ namespace ArcadeFlyer2D
 
             LoadContent();
         }
-
         public void LoadContent()
         {
             this.SpriteImage = root.Content.Load<Texture2D>("MainChar");
         }
-
-        public void Update(GameTime gameTime)
-        {
-            KeyboardState currentKeyboardState = Keyboard.GetState();
-            HandleInput(currentKeyboardState);
-        }
-
         public void HandleInput(KeyboardState currentKeyboardState)
         {
             bool wKeyPressed = currentKeyboardState.IsKeyDown(Keys.W);
@@ -55,7 +53,35 @@ namespace ArcadeFlyer2D
             {
                 position.X += movementSpeed;
             }
+
+            bool spaceKeyPressed = currentKeyboardState.IsKeyDown(Keys.Space);
+            if (spaceKeyPressed && !projectileTimerActive)
+            {
+                Vector2 projectilePosition;
+                Vector2 projectileVelocity;
+
+                projectilePosition = new Vector2(position.X + (SpriteWidth / 2), position.Y + (SpriteHeight / 2));
+                projectileVelocity = new Vector2(10.0f, 0.0f);
+                root.FireProjectile(projectilePosition, projectileVelocity);
+                projectileTimerActive = true;
+                projectileTimer = 0.0f;
+            }
         }
 
+        public void Update(GameTime gameTime)
+        {
+            KeyboardState currentKeyboardState = Keyboard.GetState();
+            HandleInput(currentKeyboardState);
+
+            if (projectileTimerActive)
+            {
+                projectileTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                if(projectileTimer >= projectileCoolDownTime)
+                {
+                    projectileTimerActive = false;
+                }
+            }
+        }
     }
 }

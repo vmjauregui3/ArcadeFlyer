@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
 
 namespace ArcadeFlyer2D
 {
@@ -15,6 +16,9 @@ namespace ArcadeFlyer2D
         private Player player; 
 
         private Enemy enemy;
+
+        private List<Projectile> projectiles;
+        private Texture2D playerProjectileSprite;
         
         //propfull
         //ctor
@@ -32,7 +36,6 @@ namespace ArcadeFlyer2D
             set { screenHeight = value; }
         }
         
-
         // Initalized the game
         public ArcadeFlyerGame()
         {
@@ -53,7 +56,9 @@ namespace ArcadeFlyer2D
             Vector2 position = new Vector2(100.0f, 100.0f);
             player = new Player(this, position);
 
-            enemy = new Enemy(this, new Vector2(screenWidth-200, 0));
+            enemy = new Enemy(this, new Vector2(screenWidth-128, 0));
+
+            projectiles = new List<Projectile>();
         }
 
         // Initialize
@@ -68,6 +73,7 @@ namespace ArcadeFlyer2D
                 //playerImage = Content.Load<Texture2D>("MainChar"); //test(//)
             // Create the sprite batch
             spriteBatch = new SpriteBatch(GraphicsDevice);
+            playerProjectileSprite = Content.Load<Texture2D>("PlayerFire");
         }
 
         // Called every frame
@@ -77,6 +83,16 @@ namespace ArcadeFlyer2D
             base.Update(gameTime);
             player.Update(gameTime);
             enemy.Update(gameTime);
+
+            foreach(Projectile p in projectiles)
+            {
+                if(p.Position.X>this.ScreenWidth)
+                {
+                    projectiles.Remove(p);
+                    return;
+                }
+                p.Update();
+            }
         }
 
         // Draw everything in the game
@@ -94,7 +110,19 @@ namespace ArcadeFlyer2D
             */ //test (/*)
             player.Draw(gameTime, spriteBatch);
             enemy.Draw(gameTime, spriteBatch);
+            foreach(Projectile p in projectiles)
+            {
+                p.Draw(gameTime, spriteBatch);
+            }
+
             spriteBatch.End();
+        }
+    
+        public void FireProjectile(Vector2 position, Vector2 velocity)
+        {
+            Projectile firedProjectile = new Projectile(position, velocity, playerProjectileSprite);
+            projectiles.Add(firedProjectile);
+
         }
     }
 }
