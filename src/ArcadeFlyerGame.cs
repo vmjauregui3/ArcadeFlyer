@@ -19,6 +19,7 @@ namespace ArcadeFlyer2D
 
         private List<Projectile> projectiles;
         private Texture2D playerProjectileSprite;
+        private Texture2D enemyProjectileSprite;
         
         //propfull
         //ctor
@@ -74,6 +75,7 @@ namespace ArcadeFlyer2D
             // Create the sprite batch
             spriteBatch = new SpriteBatch(GraphicsDevice);
             playerProjectileSprite = Content.Load<Texture2D>("PlayerFire");
+            enemyProjectileSprite = Content.Load<Texture2D>("EnemyFire");
         }
 
         // Called every frame
@@ -86,7 +88,7 @@ namespace ArcadeFlyer2D
 
             foreach(Projectile p in projectiles)
             {
-                if(p.Position.X>this.ScreenWidth)
+                if(p.Position.X>this.ScreenWidth || p.Position.X<0 || p.Position.Y>this.ScreenHeight || p.Position.Y<0)
                 {
                     projectiles.Remove(p);
                     return;
@@ -118,11 +120,25 @@ namespace ArcadeFlyer2D
             spriteBatch.End();
         }
     
-        public void FireProjectile(Vector2 position, Vector2 velocity)
+        public void FireProjectile(Vector2 position, Vector2 velocity, ProjectileType projectileType)
         {
-            Projectile firedProjectile = new Projectile(position, velocity, playerProjectileSprite);
-            projectiles.Add(firedProjectile);
+            Texture2D projectileTexture;
 
+            switch (projectileType)
+            {
+                case ProjectileType.Enemy :
+                    projectileTexture = enemyProjectileSprite;
+                    break;
+                case ProjectileType.Player :
+                    projectileTexture = playerProjectileSprite;
+                    break;
+                default :
+                    projectileTexture = playerProjectileSprite;
+                    break;
+            }
+
+            Projectile firedProjectile = new Projectile(position, velocity, projectileTexture);
+            projectiles.Add(firedProjectile);
         }
     }
 }
