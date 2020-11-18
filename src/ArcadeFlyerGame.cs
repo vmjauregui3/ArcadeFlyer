@@ -128,6 +128,16 @@ namespace ArcadeFlyer2D
                             enemies.Remove(e);
                         }
                     }
+                    for(int k = projectiles.Count - 1; k >= 0; k--)
+                    {
+                        Projectile q = projectiles[k];
+
+                        if(q.Overlaps(p) && q.ProjectileType == ProjectileType.Enemy)
+                        {
+                            projectiles.Remove(q); k--;
+                            projectiles.Remove(p); i--;
+                        }
+                    }
                 }
             }
             if(!enemyCreationTimer.Active)
