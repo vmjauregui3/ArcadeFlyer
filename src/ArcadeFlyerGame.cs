@@ -14,6 +14,8 @@ namespace ArcadeFlyer2D
         private SpriteBatch spriteBatch;
 
         private Player player; 
+        private int life = 3;
+        private int score = 0;
 
         private List<Enemy> enemies;
         private Timer enemyCreationTimer;
@@ -21,6 +23,9 @@ namespace ArcadeFlyer2D
         private List<Projectile> projectiles;
         private Texture2D playerProjectileSprite;
         private Texture2D enemyProjectileSprite;
+
+        //Font for drawing text
+        private SpriteFont textFont;
         
         //propfull
         //ctor
@@ -81,6 +86,8 @@ namespace ArcadeFlyer2D
             spriteBatch = new SpriteBatch(GraphicsDevice);
             playerProjectileSprite = Content.Load<Texture2D>("PlayerFire");
             enemyProjectileSprite = Content.Load<Texture2D>("EnemyFire");
+            //Load the font
+            textFont = Content.Load<SpriteFont>("Text");
         }
 
         // Called every frame
@@ -115,6 +122,7 @@ namespace ArcadeFlyer2D
                 if(!isPlayerProjectile && player.Overlaps(p))
                 {
                     projectiles.Remove(p);
+                    life--; //Same as: life = life -1;
                 }
                 else if(isPlayerProjectile)
                 {
@@ -126,6 +134,7 @@ namespace ArcadeFlyer2D
                         {
                             projectiles.Remove(p);
                             enemies.Remove(e);
+                            score = score + 1;
                         }
                     }
                     for(int k = projectiles.Count - 1; k >= 0; k--)
@@ -140,9 +149,22 @@ namespace ArcadeFlyer2D
                     }
                 }
             }
+
+            for(int i = enemies.Count - 1; i >= 0; i--)
+            {
+                Enemy e = enemies[i];
+
+                if(e.Overlaps(player))
+                {
+                    enemies.Remove(e);
+                    life = life - 2;
+                }
+            }
+
             if(!enemyCreationTimer.Active)
             {
-                enemies.Add(new Enemy(this, new Vector2(screenWidth-128, 0)));
+                var randSpawnHeight = new System.Random();
+                enemies.Add(new Enemy(this, new Vector2(screenWidth-128, randSpawnHeight.Next(0,screenHeight))));
 
                 enemyCreationTimer.StartTimer();
             }
@@ -174,6 +196,12 @@ namespace ArcadeFlyer2D
             {
                 p.Draw(gameTime, spriteBatch);
             }
+
+            //Draw the score and lives
+            string scoreString = "Score: " + score.ToString();
+            string livesString = "Lives: " + life.ToString();
+            spriteBatch.DrawString(textFont, scoreString, Vector2.Zero, Color.Maroon);
+            spriteBatch.DrawString(textFont, livesString, new Vector2(0.0f, 20.0f), Color.Maroon);
 
             spriteBatch.End();
         }

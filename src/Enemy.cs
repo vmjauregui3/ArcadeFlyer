@@ -21,8 +21,10 @@ namespace ArcadeFlyer2D
             this.root = root;
             this.Position = position;
             this.SpriteWidth = 64.0f;
-            this.velocity = new Vector2(-1.0f, 2.0f);
 
+            var rand = new System.Random();
+            this.velocity = new Vector2(rand.Next(-4,-1), rand.Next(-3,5));
+            //this.velocity = new Vector2(-1.0f, 2.0f); //Original Default Speed
             projectileCooldown = new Timer(1.0f);
 
             // Load the content for this enemy
