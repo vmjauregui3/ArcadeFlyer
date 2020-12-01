@@ -23,7 +23,13 @@ namespace ArcadeFlyer2D
             this.SpriteWidth = 64.0f;
 
             var rand = new System.Random();
-            this.velocity = new Vector2(rand.Next(-4,-1), rand.Next(-3,5));
+            int randVelocityX = rand.Next(-4,-1);
+            int randVelocityY = rand.Next(-3,5);
+            while(randVelocityY == 0)
+            {
+                randVelocityY = rand.Next(-3,5);
+            }
+            this.velocity = new Vector2(randVelocityX, randVelocityY);
             //this.velocity = new Vector2(-1.0f, 2.0f); //Original Default Speed
             projectileCooldown = new Timer(1.0f);
 
@@ -61,9 +67,13 @@ namespace ArcadeFlyer2D
                 Vector2 projectilePosition = new Vector2();
                 projectilePosition.X = position.X;
                 projectilePosition.Y = position.Y + (SpriteHeight / 2);
+
                 Vector2 projectileVelocity = new Vector2();
                 projectileVelocity.X = -5.0f;
                 projectileVelocity.Y = 0f;
+
+                
+
                 root.FireProjectile(projectilePosition, projectileVelocity, ProjectileType.Enemy);
             }
         }

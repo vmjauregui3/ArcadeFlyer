@@ -16,7 +16,9 @@ namespace ArcadeFlyer2D
         private Player player; 
         private int life = 3;
         private int score = 0;
-
+        private int killCount = 0;
+        //Is the game over?
+        private bool gameOver = false;
         private List<Enemy> enemies;
         private Timer enemyCreationTimer;
 
@@ -29,7 +31,7 @@ namespace ArcadeFlyer2D
         
         //propfull
         //ctor
-        private int screenWidth = 1600;
+        private int screenWidth = 1450;
         public int ScreenWidth
         {
             get { return screenWidth; }
@@ -95,6 +97,13 @@ namespace ArcadeFlyer2D
         {   
             // Update base game
             base.Update(gameTime);
+
+            //Game is over
+            if(gameOver)
+            {
+                return;
+            }
+
             player.Update(gameTime);
             
             foreach(Enemy enemy in enemies)
@@ -134,6 +143,7 @@ namespace ArcadeFlyer2D
                         {
                             projectiles.Remove(p);
                             enemies.Remove(e);
+                            killCount++;
                             score = score + 1;
                         }
                     }
@@ -158,6 +168,7 @@ namespace ArcadeFlyer2D
                 {
                     enemies.Remove(e);
                     life = life - 2;
+                    killCount++;
                 }
             }
 
@@ -170,6 +181,15 @@ namespace ArcadeFlyer2D
             }
             enemyCreationTimer.Update(gameTime);
 
+            if(killCount >= 10)
+            {
+                killCount = 0;
+                life++;
+            }
+            if(life <= 0)
+            {
+                gameOver = true;
+            }
         }
 
         // Draw everything in the game
@@ -185,8 +205,11 @@ namespace ArcadeFlyer2D
                 spriteBatch.Draw(playerImage, playerDestinationRect, Color.LightGreen); 
                 //Color.White adds a clear filter to show the image. Color.(other) tints it that color
             */ //test (/*)
-            player.Draw(gameTime, spriteBatch);
-
+            if(!gameOver)
+            {
+                player.Draw(gameTime, spriteBatch);
+            }
+            
             foreach(Enemy enemy in enemies)
             {
                 enemy.Draw(gameTime, spriteBatch);
@@ -200,8 +223,15 @@ namespace ArcadeFlyer2D
             //Draw the score and lives
             string scoreString = "Score: " + score.ToString();
             string livesString = "Lives: " + life.ToString();
-            spriteBatch.DrawString(textFont, scoreString, Vector2.Zero, Color.Maroon);
-            spriteBatch.DrawString(textFont, livesString, new Vector2(0.0f, 20.0f), Color.Maroon);
+            spriteBatch.DrawString(textFont, scoreString, Vector2.Zero, Color.Black);
+            spriteBatch.DrawString(textFont, livesString, new Vector2(0.0f, 20.0f), Color.Black);
+
+            if(gameOver)
+            {
+                spriteBatch.DrawString(textFont, "Game Over!", new Vector2((screenWidth/2),(screenHeight/2)), Color.Black);
+                string finalScore = "Final Score " + score.ToString();
+                spriteBatch.DrawString(textFont, finalScore, new Vector2((screenWidth/2),(screenHeight/2)+20), Color.Black);
+            }
 
             spriteBatch.End();
         }
