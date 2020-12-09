@@ -14,9 +14,9 @@ namespace ArcadeFlyer2D
         private SpriteBatch spriteBatch;
 
         private Player player; 
-        private int life = 3;
+        public int life = 3;
         private int score = 0;
-        private int killCount = 0;
+        public int points = 0;
         //Is the game over?
         private bool gameOver = false;
         private List<Enemy> enemies;
@@ -66,7 +66,7 @@ namespace ArcadeFlyer2D
             player = new Player(this, position);
 
             enemies = new List<Enemy>();
-            enemies.Add(new Enemy(this, new Vector2(screenWidth-128, 0)));
+            enemies.Add(new Enemy(this, new Vector2(19*(screenWidth/20), screenHeight/2)));
 
             enemyCreationTimer = new Timer(1.0f);
             enemyCreationTimer.StartTimer();
@@ -143,8 +143,8 @@ namespace ArcadeFlyer2D
                         {
                             projectiles.Remove(p);
                             enemies.Remove(e);
-                            killCount++;
-                            score = score + 1;
+                            score += 1;
+                            points += 1;
                         }
                     }
                     for(int k = projectiles.Count - 1; k >= 0; k--)
@@ -153,8 +153,9 @@ namespace ArcadeFlyer2D
 
                         if(q.Overlaps(p) && q.ProjectileType == ProjectileType.Enemy)
                         {
-                            projectiles.Remove(q); k--;
-                            projectiles.Remove(p); i--;
+                            projectiles.Remove(q);
+                            projectiles.Remove(p);
+                            k--;  i--;
                         }
                     }
                 }
@@ -167,25 +168,31 @@ namespace ArcadeFlyer2D
                 if(e.Overlaps(player))
                 {
                     enemies.Remove(e);
-                    life = life - 2;
-                    killCount++;
+                    life -= 2;
                 }
             }
 
             if(!enemyCreationTimer.Active)
             {
                 var randSpawnHeight = new System.Random();
-                enemies.Add(new Enemy(this, new Vector2(screenWidth-128, randSpawnHeight.Next(0,screenHeight))));
+                enemies.Add(new Enemy(this, new Vector2(screenWidth, randSpawnHeight.Next(0,screenHeight))));
+
+                Enemy lastAddedEnemy = enemies[enemies.Count - 1];
+                if(lastAddedEnemy.Position.X >= (screenWidth - lastAddedEnemy.SpriteWidth) )
+                {
+                    Vector2 enemyPositionCorrectorX = new Vector2(screenWidth-lastAddedEnemy.SpriteWidth,lastAddedEnemy.Position.Y);
+                    lastAddedEnemy.Position = enemyPositionCorrectorX;
+                }
+                if(lastAddedEnemy.Position.Y >= (screenHeight - lastAddedEnemy.SpriteHeight) )
+                {
+                    Vector2 enemyPositionCorrectorY = new Vector2(lastAddedEnemy.Position.X,(screenHeight - lastAddedEnemy.SpriteHeight));
+                    lastAddedEnemy.Position = enemyPositionCorrectorY;
+                }
 
                 enemyCreationTimer.StartTimer();
             }
             enemyCreationTimer.Update(gameTime);
 
-            if(killCount >= 10)
-            {
-                killCount = 0;
-                life++;
-            }
             if(life <= 0)
             {
                 gameOver = true;
@@ -223,8 +230,11 @@ namespace ArcadeFlyer2D
             //Draw the score and lives
             string scoreString = "Score: " + score.ToString();
             string livesString = "Lives: " + life.ToString();
+            string livesPoints = "Points: " + points.ToString();
+            
             spriteBatch.DrawString(textFont, scoreString, Vector2.Zero, Color.Black);
             spriteBatch.DrawString(textFont, livesString, new Vector2(0.0f, 20.0f), Color.Black);
+            spriteBatch.DrawString(textFont, livesPoints, new Vector2(0.0f, 45.0f), Color.Black);
 
             if(gameOver)
             {
@@ -252,6 +262,7 @@ namespace ArcadeFlyer2D
                     projectileTexture = playerProjectileSprite;
                     break;
             }
+            
 
             Projectile firedProjectile = new Projectile(position, velocity, projectileTexture, projectileType);
             projectiles.Add(firedProjectile);

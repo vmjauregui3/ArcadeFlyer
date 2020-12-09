@@ -51,11 +51,11 @@ namespace ArcadeFlyer2D
             position += velocity;
 
             // Bounce on top and bottom
-            if (position.Y < 0 || position.Y > (root.ScreenHeight - SpriteHeight))
+            if (position.Y <= 0 || position.Y > (root.ScreenHeight - SpriteHeight))
             {
                 velocity.Y *= -1;
             }
-            if (position.X < 0 || position.X > (root.ScreenWidth - SpriteWidth))
+            if (position.X <= 0 || position.X > (root.ScreenWidth - SpriteWidth))
             {
                 velocity.X *= -1;
             }
