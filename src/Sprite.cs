@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ArcadeFlyer2D
 {
-    class Sprite
+    public class Sprite
     {
         // The current position of the sprite
         protected Vector2 position;
@@ -58,8 +58,9 @@ namespace ArcadeFlyer2D
         }
         
         //Draw the sprite
-        public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+        public void Draw(GameTime gameTime, SpriteBatch spriteBatch /*, Vector2 playerPosition*/)
         {
+            //Rectangle drawPoisition = new Rectangle((int)(position.X-playerPosition.X), (int)(position.Y-playerPosition.Y), PositionRectangle.Width, PositionRectangle.Height); 
             spriteBatch.Draw(spriteImage, PositionRectangle, Color.White);
         }
 

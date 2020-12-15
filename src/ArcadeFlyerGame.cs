@@ -1,11 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework.Input;
 
 namespace ArcadeFlyer2D
 {
     // The Game itself
-    class ArcadeFlyerGame : Game
+    public class ArcadeFlyerGame : Game
     {
         // Graphics Manager
         private GraphicsDeviceManager graphics;
@@ -13,18 +14,25 @@ namespace ArcadeFlyer2D
         // Sprite Drawer
         private SpriteBatch spriteBatch;
 
-        private Player player; 
-        public int life = 3;
+        private Camera camera;
+
+        private FieldBounds fieldBounds;
+
+        public Player player; 
+        public int life = 300;
         private int score = 0;
         public int points = 0;
         //Is the game over?
         private bool gameOver = false;
         private List<Enemy> enemies;
         private Timer enemyCreationTimer;
+        private Timer bossCreationTimer;
 
         private List<Projectile> projectiles;
         private Texture2D playerProjectileSprite;
         private Texture2D enemyProjectileSprite;
+        private Texture2D bossProjectileSprite;
+        public MouseState testState;
 
         //Font for drawing text
         private SpriteFont textFont;
@@ -56,6 +64,8 @@ namespace ArcadeFlyer2D
             graphics.PreferredBackBufferHeight = screenHeight;
             graphics.ApplyChanges();
 
+            //viewport = new Viewport(0,0,screenWidth,screenHeight);
+
             // Set up the directory containing the assets
             Content.RootDirectory = "Content";
 
@@ -64,12 +74,16 @@ namespace ArcadeFlyer2D
 
             Vector2 position = new Vector2(100.0f, 100.0f);
             player = new Player(this, position);
+            fieldBounds = new FieldBounds(this);
 
             enemies = new List<Enemy>();
-            enemies.Add(new Enemy(this, new Vector2(19*(screenWidth/20), screenHeight/2)));
+            enemies.Add(new Enemy(this, new Vector2(19*(screenWidth/20), screenHeight/2), EnemyType.Wizard));
 
             enemyCreationTimer = new Timer(1.0f);
             enemyCreationTimer.StartTimer();
+
+            bossCreationTimer = new Timer(15.0f);
+            bossCreationTimer.StartTimer();
 
             projectiles = new List<Projectile>();
         }
@@ -88,8 +102,11 @@ namespace ArcadeFlyer2D
             spriteBatch = new SpriteBatch(GraphicsDevice);
             playerProjectileSprite = Content.Load<Texture2D>("PlayerFire");
             enemyProjectileSprite = Content.Load<Texture2D>("EnemyFire");
+            bossProjectileSprite = Content.Load<Texture2D>("BossFire");
             //Load the font
             textFont = Content.Load<SpriteFont>("Text");
+
+            camera = new Camera(this);
         }
 
         // Called every frame
@@ -97,6 +114,10 @@ namespace ArcadeFlyer2D
         {   
             // Update base game
             base.Update(gameTime);
+            camera.Follow(player);
+            fieldBounds.Update(player.Position);
+
+            MouseState testState = Mouse.GetState();
 
             //Game is over
             if(gameOver)
@@ -104,16 +125,23 @@ namespace ArcadeFlyer2D
                 return;
             }
 
-            player.Update(gameTime);
+            player.Update(gameTime, fieldBounds, camera.absolutePosition);
             
             foreach(Enemy enemy in enemies)
             {
-                enemy.Update(gameTime);
+                enemy.Update(gameTime, player.Position);
             }
 
             foreach(Projectile p in projectiles)
             {
-                if(p.Position.X>this.ScreenWidth || p.Position.X<0 || p.Position.Y>this.ScreenHeight || p.Position.Y<0)
+                if(p.Position.X>(fieldBounds.Boundaries.X+fieldBounds.Boundaries.Width) 
+                || p.Position.X<fieldBounds.Boundaries.X
+                || p.Position.X<0
+                || p.Position.X>ScreenWidth*10
+                || p.Position.Y>(fieldBounds.Boundaries.Y+fieldBounds.Boundaries.Height) 
+                || p.Position.Y<fieldBounds.Boundaries.Y
+                || p.Position.Y<0
+                || p.Position.Y>ScreenHeight*10)
                 {
                     projectiles.Remove(p);
                     return;
@@ -141,17 +169,32 @@ namespace ArcadeFlyer2D
 
                         if(e.Overlaps(p))
                         {
+                            e.health -= 1;
                             projectiles.Remove(p);
-                            enemies.Remove(e);
-                            score += 1;
-                            points += 1;
+                        }
+
+                        if(e.health <= 0)
+                        {
+                            if(e.EnemyType == EnemyType.Wizard)
+                            {
+                                
+                                enemies.Remove(e);
+                                score += 1;
+                                points += 1;
+                            }
+                            else if(e.EnemyType == EnemyType.Boss)
+                            {
+                                enemies.Remove(e);
+                                score += 5;
+                                points += 5;
+                            }
                         }
                     }
                     for(int k = projectiles.Count - 1; k >= 0; k--)
                     {
                         Projectile q = projectiles[k];
 
-                        if(q.Overlaps(p) && q.ProjectileType == ProjectileType.Enemy)
+                        if(q.Overlaps(p) && (q.ProjectileType == ProjectileType.EnemyFire || q.ProjectileType == ProjectileType.BossFire))
                         {
                             projectiles.Remove(q);
                             projectiles.Remove(p);
@@ -165,7 +208,7 @@ namespace ArcadeFlyer2D
             {
                 Enemy e = enemies[i];
 
-                if(e.Overlaps(player))
+                if(e.Overlaps(player) && e.EnemyType == EnemyType.Wizard)
                 {
                     enemies.Remove(e);
                     life -= 2;
@@ -174,16 +217,17 @@ namespace ArcadeFlyer2D
 
             if(!enemyCreationTimer.Active)
             {
+                var randSpawnWidth = new System.Random();
                 var randSpawnHeight = new System.Random();
-                enemies.Add(new Enemy(this, new Vector2(screenWidth, randSpawnHeight.Next(0,screenHeight))));
+                enemies.Add(new Enemy(this, new Vector2(randSpawnWidth.Next(screenWidth,10*screenWidth), randSpawnHeight.Next(0,10*ScreenHeight)), EnemyType.Wizard));
 
                 Enemy lastAddedEnemy = enemies[enemies.Count - 1];
-                if(lastAddedEnemy.Position.X >= (screenWidth - lastAddedEnemy.SpriteWidth) )
+                if(lastAddedEnemy.Position.X >= (10*screenWidth - lastAddedEnemy.SpriteWidth) )
                 {
-                    Vector2 enemyPositionCorrectorX = new Vector2(screenWidth-lastAddedEnemy.SpriteWidth,lastAddedEnemy.Position.Y);
+                    Vector2 enemyPositionCorrectorX = new Vector2(10*screenWidth-lastAddedEnemy.SpriteWidth,lastAddedEnemy.Position.Y);
                     lastAddedEnemy.Position = enemyPositionCorrectorX;
                 }
-                if(lastAddedEnemy.Position.Y >= (screenHeight - lastAddedEnemy.SpriteHeight) )
+                if(lastAddedEnemy.Position.Y >= (10*screenHeight - lastAddedEnemy.SpriteHeight) )
                 {
                     Vector2 enemyPositionCorrectorY = new Vector2(lastAddedEnemy.Position.X,(screenHeight - lastAddedEnemy.SpriteHeight));
                     lastAddedEnemy.Position = enemyPositionCorrectorY;
@@ -193,19 +237,40 @@ namespace ArcadeFlyer2D
             }
             enemyCreationTimer.Update(gameTime);
 
+            if(!bossCreationTimer.Active && score > 10)
+            {
+                var randSpawnWidth = new System.Random();
+                var randSpawnHeight = new System.Random();
+                enemies.Add(new Enemy(this, new Vector2(player.Position.X+800, player.Position.Y+800), EnemyType.Boss));
+
+                Enemy lastAddedEnemy = enemies[enemies.Count - 1];
+                if(lastAddedEnemy.Position.X >= (10*screenWidth - lastAddedEnemy.SpriteWidth) )
+                {
+                    Vector2 enemyPositionCorrectorX = new Vector2(10*screenWidth-lastAddedEnemy.SpriteWidth,lastAddedEnemy.Position.Y);
+                    lastAddedEnemy.Position = enemyPositionCorrectorX;
+                }
+                if(lastAddedEnemy.Position.Y >= (10*screenHeight - lastAddedEnemy.SpriteHeight) )
+                {
+                    Vector2 enemyPositionCorrectorY = new Vector2(lastAddedEnemy.Position.X,(screenHeight - lastAddedEnemy.SpriteHeight));
+                    lastAddedEnemy.Position = enemyPositionCorrectorY;
+                }
+
+                bossCreationTimer.StartTimer();
+            }
+            bossCreationTimer.Update(gameTime);
+
             if(life <= 0)
             {
                 gameOver = true;
             }
         }
-
         // Draw everything in the game
         protected override void Draw(GameTime gameTime)
         {
             // First clear the screen
             GraphicsDevice.Clear(Color.LightSteelBlue);
 
-            spriteBatch.Begin();
+            spriteBatch.Begin(transformMatrix: camera.Transform);
             /*
                 //Drawing will happen here
                 Rectangle playerDestinationRect = new Rectangle(100,100,playerImage.Width,playerImage.Height);
@@ -230,11 +295,13 @@ namespace ArcadeFlyer2D
             //Draw the score and lives
             string scoreString = "Score: " + score.ToString();
             string livesString = "Lives: " + life.ToString();
+            //string scoreString = testState.X.ToString();
+            //string livesString = testState.Y.ToString();
             string livesPoints = "Points: " + points.ToString();
             
-            spriteBatch.DrawString(textFont, scoreString, Vector2.Zero, Color.Black);
-            spriteBatch.DrawString(textFont, livesString, new Vector2(0.0f, 20.0f), Color.Black);
-            spriteBatch.DrawString(textFont, livesPoints, new Vector2(0.0f, 45.0f), Color.Black);
+            spriteBatch.DrawString(textFont, scoreString, new Vector2(fieldBounds.ScreenBoundaries.X, fieldBounds.ScreenBoundaries.Y), Color.Black);
+            spriteBatch.DrawString(textFont, livesString, new Vector2(fieldBounds.ScreenBoundaries.X, fieldBounds.ScreenBoundaries.Y+20.0f), Color.Black);
+            spriteBatch.DrawString(textFont, livesPoints, new Vector2(fieldBounds.ScreenBoundaries.X, fieldBounds.ScreenBoundaries.Y+45.0f), Color.Black);
 
             if(gameOver)
             {
@@ -252,9 +319,12 @@ namespace ArcadeFlyer2D
 
             switch (projectileType)
             {
-                case ProjectileType.Enemy :
+                case ProjectileType.EnemyFire :
                     projectileTexture = enemyProjectileSprite;
                     break;
+                case ProjectileType.BossFire :
+                    projectileTexture = bossProjectileSprite;
+                    break;    
                 case ProjectileType.Player :
                     projectileTexture = playerProjectileSprite;
                     break;

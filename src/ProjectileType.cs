@@ -2,9 +2,10 @@ using Microsoft.Xna.Framework;
 
     namespace ArcadeFlyer2D
     {   
-        enum ProjectileType
+        public enum ProjectileType
         {
             Player,
-            Enemy
+            EnemyFire,
+            BossFire
         }
     }

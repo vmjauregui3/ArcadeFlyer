@@ -1,15 +1,16 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
 
 namespace ArcadeFlyer2D
 {
-    class Player : Sprite
+    public class Player : Sprite
     {
         private ArcadeFlyerGame root;
+        private FieldBounds fieldBounds;
+        private Vector2 cameraPosition;
         
-        private float movementSpeed = 20.0f;
+        private float movementSpeed = 10.0f;
         //private Vector2 cursorPosition;
         //private Timer cooldownTimer;
         private bool firingProjectile = false;
@@ -21,6 +22,7 @@ namespace ArcadeFlyer2D
             this.root = root;
             this.Position = position;
             this.SpriteWidth = 100.0f;
+            
 
             //cooldownTimer = new Timer(0.5f);
 
@@ -30,7 +32,7 @@ namespace ArcadeFlyer2D
         {
             this.SpriteImage = root.Content.Load<Texture2D>("MainChar");
         }
-        public void HandleInput(KeyboardState currentKeyboardState, MouseState currentMouseState)
+        public void HandleInput(KeyboardState currentKeyboardState, MouseState currentMouseState, FieldBounds fieldBounds, Vector2 cameraPosition)
         {
             Point currentMousePosition = currentMouseState.Position;
             bool wKeyPressed = currentKeyboardState.IsKeyDown(Keys.W);
@@ -40,7 +42,7 @@ namespace ArcadeFlyer2D
             }
 
             bool sKeyPressed = currentKeyboardState.IsKeyDown(Keys.S);
-            if(sKeyPressed)
+            if(sKeyPressed && position.Y < root.ScreenHeight*10)
             {
                 position.Y += movementSpeed;
             }
@@ -52,7 +54,7 @@ namespace ArcadeFlyer2D
             }
 
             bool dKeyPressed = currentKeyboardState.IsKeyDown(Keys.D);
-            if(dKeyPressed)
+            if(dKeyPressed && position.X < root.ScreenWidth*10)
             {
                 position.X += movementSpeed;
             }
@@ -69,11 +71,16 @@ namespace ArcadeFlyer2D
                 //These two lines do the same thing as the following, except with a lot of math instead of code.
                 //projectileVelocity.X = ( 10*(currentMousePosition.X-position.X)/(Convert.ToInt32( Math.Sqrt( Math.Pow((currentMousePosition.X-position.X),2) + Math.Pow(((currentMousePosition.Y-position.Y)),2) ) ) ) ); //works
                 //projectileVelocity.Y = ( 10*(currentMousePosition.Y-position.Y)/(Convert.ToInt32( Math.Sqrt( Math.Pow((currentMousePosition.X-position.X),2) + Math.Pow(((currentMousePosition.Y-position.Y)),2) ) ) ) ); //works
-                projectileVelocity.X = (currentMousePosition.X-position.X);
-                projectileVelocity.Y = (currentMousePosition.Y-position.Y);
-                projectileVelocity.Normalize();
-                projectileVelocity *= 10; 
+                
+                //the good stuff:
+               // projectileVelocity.X = (currentMousePosition.X-position.X);
+               // projectileVelocity.Y = (currentMousePosition.Y-position.Y);
 
+                projectileVelocity.X = ((currentMousePosition.X+fieldBounds.ScreenBoundaries.X)-position.X);
+                projectileVelocity.Y = ((currentMousePosition.Y+fieldBounds.ScreenBoundaries.Y)-position.Y);
+
+                projectileVelocity.Normalize();
+                projectileVelocity *= 7; 
 
                 root.FireProjectile(projectilePosition, projectileVelocity, ProjectileType.Player);
                 firingProjectile = true;
@@ -100,6 +107,8 @@ namespace ArcadeFlyer2D
             {
                 position.X = currentMousePosition.X;
                 position.Y = currentMousePosition.Y;
+                //position.X = fieldBounds.OriginalScreenMiddle.X+200;
+                //position.Y = fieldBounds.OriginalScreenMiddle.Y+200;
                 root.points -= 5;
             }
 
@@ -118,11 +127,14 @@ namespace ArcadeFlyer2D
 
         }
 
-        public void Update(GameTime gameTime)
+        public void Update(GameTime gameTime, FieldBounds fieldBounds, Vector2 cameraPosition)
         {
+            this.fieldBounds = fieldBounds;
+            this.cameraPosition = cameraPosition;
             KeyboardState currentKeyboardState = Keyboard.GetState();
             MouseState currentMouseState = Mouse.GetState();
-            HandleInput(currentKeyboardState, currentMouseState);
+            HandleInput(currentKeyboardState, currentMouseState, fieldBounds, cameraPosition);
+
 
             bool spaceKeyPressed = currentKeyboardState.IsKeyDown(Keys.Space);
             if (firingProjectile && !spaceKeyPressed)
