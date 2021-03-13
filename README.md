@@ -1,3 +1,5 @@
+This is a modified version of the Arcade Flyer originally composed by Lord Joseph Maxwell of Hyland Software.
+
 # Arcade Flyer - MonoGame
 This repository contains the code for the Arcade Flyer game built throughout the C# 201 Hy-Tech Club course.
 
